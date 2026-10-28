@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unit Circle: sin and cos as vector components</title>
+<style>
+:root{
+  --bg:#fafaf7;--card:#fff;--text:#1d1d1b;--muted:#6b6b66;--line:#d6d6cf;
+  --cos:#2563eb;--sin:#dc2626;--vec:#111;--accent:#7c3aed;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#141413;--card:#1f1f1d;--text:#ececE6;--muted:#9a9a92;--line:#3a3a36;--cos:#60a5fa;--sin:#f87171;--vec:#f2f2ee;--accent:#a78bfa}
+}
+:root[data-theme="dark"]{--bg:#141413;--card:#1f1f1d;--text:#ececE6;--muted:#9a9a92;--line:#3a3a36;--cos:#60a5fa;--sin:#f87171;--vec:#f2f2ee;--accent:#a78bfa}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.4rem;margin:0 0 4px}
+p.sub{margin:0 0 16px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+.ax{stroke:var(--muted);stroke-width:1}
+.circ{fill:none;stroke:var(--text);stroke-width:1.5}
+.lbl{fill:var(--muted);font-size:12px}
+.pt{cursor:grab}
+.pt:active{cursor:grabbing}
+.slider{margin-top:12px}
+.slider label{display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.ticks{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.read{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.r{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-variant-numeric:tabular-nums}
+.r b{display:block;font-size:1.1rem}
+.r small{color:var(--muted)}
+.c{color:var(--cos)}.s{color:var(--sin)}
+.note{margin:12px 2px 0;font-size:.9rem;color:var(--muted)}
+.wave-title{font-size:.9rem;color:var(--muted);margin:2px 4px 6px}
+.rad{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:.9rem;color:var(--muted)}
+.rad input{width:7em;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+</style>
+</head>
+<body>
+<main>
+  <h1>Circle: sin and cos as vector components</h1>
+  <p class="sub">Drag the point around the circle, or use the slider. Arg runs from −π to π.</p>
+  <div class="grid">
+    <div class="card">
+      <svg id="circle" viewBox="0 0 400 400" role="img" aria-label="Unit circle with draggable point">
+        <line class="ax" x1="20" y1="200" x2="380" y2="200"/>
+        <line class="ax" x1="200" y1="20" x2="200" y2="380"/>
+        <circle class="circ" cx="200" cy="200" r="150"/>
+        <text id="tx1" class="lbl" x="350" y="216" text-anchor="middle">1</text><text id="tx2" class="lbl" x="50" y="216" text-anchor="middle">−1</text>
+        <text id="ty1" class="lbl" x="208" y="52">1</text><text id="ty2" class="lbl" x="208" y="358">−1</text>
+        <text class="lbl" x="372" y="192">x</text><text class="lbl" x="206" y="32">y</text>
+        <path id="arc" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <text id="argLbl" fill="var(--accent)" font-size="14" font-weight="600">Arg</text>
+        <line id="dx" stroke="var(--sin)" stroke-width="1" stroke-dasharray="4 4"/>
+        <line id="dy" stroke="var(--cos)" stroke-width="1" stroke-dasharray="4 4"/>
+        <line id="cosSeg" stroke="var(--cos)" stroke-width="3"/><polygon id="cosH" style="fill:var(--cos)"/>
+        <line id="sinSeg" stroke="var(--sin)" stroke-width="3"/><polygon id="sinH" style="fill:var(--sin)"/>
+        <line id="vec" stroke="var(--vec)" stroke-width="3"/><polygon id="vecH" style="fill:var(--vec)"/>
+        <text id="cosLbl" fill="var(--cos)" font-size="14" font-weight="600" text-anchor="middle">cos Arg</text>
+        <text id="sinLbl" fill="var(--sin)" font-size="14" font-weight="600">sin Arg</text>
+        <circle id="hit" class="pt" r="24" fill="transparent"/>
+        <circle id="pt" class="pt" r="7" fill="var(--vec)" stroke="var(--card)" stroke-width="2"/>
+      </svg>
+      <div class="slider">
+        <label for="arg"><span>Arg</span><span id="sv"></span></label>
+        <input id="arg" type="range" min="-3.14159265" max="3.14159265" step="0.001" value="0.9">
+        <div class="ticks"><span>−π</span><span>−π/2</span><span>0</span><span>π/2</span><span>π</span></div>
+        <div class="rad"><label for="rad">Radius r</label><input id="rad" type="number" min="0.01" step="0.1" value="1"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="read">
+          <div class="r"><small>Arg (radians)</small><b id="rr"></b></div>
+          <div class="r"><small>Arg (degrees)</small><b id="rd"></b></div>
+          <div class="r"><small>x component = <span class="c" id="lx">cos Arg</span></small><b class="c" id="rc"></b></div>
+          <div class="r"><small>y component = <span class="s" id="ly">sin Arg</span></small><b class="s" id="rs"></b></div>
+        </div>
+        <p class="note" id="note">The vector (x, y) = (<span class="c">cos Arg</span>, <span class="s">sin Arg</span>) has length 1, so
+          <span class="c">cos²</span> + <span class="s">sin²</span> = <b id="pyth"></b>.</p>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="wave-title">cos Arg and sin Arg plotted against Arg (they don’t depend on r)</div>
+        <svg id="wave" viewBox="0 0 400 190" role="img" aria-label="Graphs of sine and cosine">
+          <line class="ax" x1="20" y1="95" x2="385" y2="95"/>
+          <line class="ax" x1="200" y1="10" x2="200" y2="180"/>
+          <text class="lbl" x="4" y="48">1</text><text class="lbl" x="2" y="148">−1</text>
+          <text class="lbl" x="12" y="110">−π</text><text class="lbl" x="362" y="110">π</text>
+          <path id="cosP" fill="none" stroke="var(--cos)" stroke-width="2"/>
+          <path id="sinP" fill="none" stroke="var(--sin)" stroke-width="2"/>
+          <line id="mk" y1="10" y2="180" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <circle id="cd" r="5" fill="var(--cos)"/>
+          <circle id="sd" r="5" fill="var(--sin)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+(function(){
+  var CX=200,CY=200,R=150,PI=Math.PI;
+  var $=function(id){return document.getElementById(id)};
+  var svg=$('circle'),slider=$('arg'),theta=0.9,dragging=false,radius=1;
+  function set(el,o){for(var k in o)el.setAttribute(k,o[k])}
+  // wave paths
+  var WX0=20,WX1=380,WY=95,WA=50;
+  function wx(t){return WX0+(t+PI)/(2*PI)*(WX1-WX0)}
+  var cp='',sp='';
+  for(var i=0;i<=180;i++){var t=-PI+i*2*PI/180;
+    cp+=(i?'L':'M')+wx(t).toFixed(1)+' '+(WY-WA*Math.cos(t)).toFixed(1);
+    sp+=(i?'L':'M')+wx(t).toFixed(1)+' '+(WY-WA*Math.sin(t)).toFixed(1);}
+  $('cosP').setAttribute('d',cp);$('sinP').setAttribute('d',sp);
+  function fmt(v){return (Math.abs(v)<0.0005?0:v).toFixed(3).replace('-0.000','0.000')}
+  function fmtR(v){return String(parseFloat(v.toPrecision(6)))}
+  function arrow(lid,hid,x1,y1,x2,y2){
+    var dx=x2-x1,dy=y2-y1,L=Math.sqrt(dx*dx+dy*dy),l=$(lid),h=$(hid);
+    if(L<2){l.style.display='none';h.style.display='none';return}
+    l.style.display='';h.style.display='';
+    var ux=dx/L,uy=dy/L,hl=Math.min(14,L),bx=x2-ux*hl,by=y2-uy*hl,w=hl*0.4;
+    set(l,{x1:x1,y1:y1,x2:bx+ux*hl*0.2,y2:by+uy*hl*0.2});
+    set(h,{points:x2+','+y2+' '+(bx-uy*w)+','+(by+ux*w)+' '+(bx+uy*w)+','+(by-ux*w)});
+  }
+  function update(){
+    var c=Math.cos(theta),s=Math.sin(theta);
+    var px=CX+R*c,py=CY-R*s;
+    set($('pt'),{cx:px,cy:py});set($('hit'),{cx:px,cy:py});
+    arrow('vec','vecH',CX,CY,CX+(R-9)*c,CY-(R-9)*s);
+    arrow('cosSeg','cosH',CX,CY,px,CY);
+    var ly=Math.abs(py-CY)>9?py-9*Math.sign(py-CY):CY;arrow('sinSeg','sinH',px,CY,px,ly);
+    set($('dx'),{x1:px,y1:py,x2:CX,y2:py});
+    set($('dy'),{x1:px,y1:py,x2:px,y2:CY});
+    var r=34;
+    set($('arc'),{d:'M'+(CX+r)+' '+CY+' A'+r+' '+r+' 0 0 '+(theta>0?0:1)+' '+(CX+r*c)+' '+(CY-r*s)});
+    var mid=theta/2;
+    set($('argLbl'),{x:CX+52*Math.cos(mid)-12,y:CY-52*Math.sin(mid)+5});
+    var below=s>=0;
+    set($('cosLbl'),{x:CX+R*c/2,y:CY+(below?20:-10)});
+    set($('sinLbl'),{x:px+(c>=0?12:-12),y:CY-R*s/2+5,'text-anchor':c>=0?'start':'end'});
+    var wxv=wx(theta);
+    set($('mk'),{x1:wxv,x2:wxv});
+    set($('cd'),{cx:wxv,cy:WY-WA*c});set($('sd'),{cx:wxv,cy:WY-WA*s});
+    var txt=fmt(theta);
+    $('rr').textContent=txt+'  ('+(theta/PI).toFixed(3)+' π)';
+    $('rd').textContent=(theta*180/PI).toFixed(1)+'°';
+    $('rc').textContent=fmt(radius*c);$('rs').textContent=fmt(radius*s);
+    $('sv').textContent=txt+' rad';
+    var rt=fmtR(radius),pre=radius===1?'':rt+' ',x=radius*c,y=radius*s;
+    $('lx').textContent=pre+'cos Arg';$('ly').textContent=pre+'sin Arg';
+    $('cosLbl').textContent=pre+'cos Arg';$('sinLbl').textContent=pre+'sin Arg';
+    $('tx1').textContent=rt;$('tx2').textContent='−'+rt;$('ty1').textContent=rt;$('ty2').textContent='−'+rt;
+    $('note').innerHTML='The vector (x, y) = (<span class="c">'+pre+'cos Arg</span>, <span class="s">'+pre+'sin Arg</span>) has length '+rt+', so <span class="c">x²</span> + <span class="s">y²</span> = <b>'+(x*x+y*y).toFixed(3)+'</b>'+(radius===1?' (cos² + sin² = 1).':' = r².');
+    slider.value=theta;
+  }
+  function fromPointer(e){
+    var rect=svg.getBoundingClientRect(),k=400/rect.width;
+    var x=(e.clientX-rect.left)*k-CX,y=CY-(e.clientY-rect.top)*k;
+    if(x===0&&y===0)return;
+    theta=Math.atan2(y,x);update();
+  }
+  svg.addEventListener('pointerdown',function(e){dragging=true;svg.setPointerCapture(e.pointerId);fromPointer(e);e.preventDefault()});
+  svg.addEventListener('pointermove',function(e){if(dragging)fromPointer(e)});
+  svg.addEventListener('pointerup',function(){dragging=false});
+  svg.addEventListener('pointercancel',function(){dragging=false});
+  slider.addEventListener('input',function(){theta=parseFloat(slider.value);update()});
+  var radIn=$('rad');
+  radIn.addEventListener('input',function(){var v=parseFloat(radIn.value);if(isFinite(v)&&v>0){radius=v;update()}});
+  radIn.addEventListener('blur',function(){radIn.value=radius});
+  update();
+})();
+</script>
+</body>
+</html>
